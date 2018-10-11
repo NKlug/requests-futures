@@ -29,8 +29,15 @@ from requests.adapters import DEFAULT_POOLSIZE, HTTPAdapter
 
 def wrap(self, sup, background_callback, *args_, **kwargs_):
     """ A global top-level is required for ProcessPoolExecutor """
-    resp = sup(*args_, **kwargs_)
-    return background_callback(self, resp) or resp
+    resp = None
+    err = None
+    try:
+        resp = sup(*args_, **kwargs_)
+    except ConnectionError as e:
+        err = e
+
+    return background_callback(self, resp, err) or resp
+
 
 
 PICKLE_ERROR = ('Cannot pickle function. Refer to documentation: https://'
