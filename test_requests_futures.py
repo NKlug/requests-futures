@@ -40,9 +40,10 @@ class RequestsTestCase(TestCase):
         resp = future.result()
         self.assertEqual(404, resp.status_code)
 
-        def cb(s, r):
+        def cb(s, r, e):
             self.assertIsInstance(s, FuturesSession)
             self.assertIsInstance(r, Response)
+            self.assertIsNone(e)
             # add the parsed json data to the response
             r.data = r.json()
 
@@ -53,7 +54,7 @@ class RequestsTestCase(TestCase):
         # make sure the callback was invoked
         self.assertTrue(hasattr(resp, 'data'))
 
-        def rasing_cb(s, r):
+        def rasing_cb(s, r, e):
             raise Exception('boom')
 
         future = sess.get(httpbin('get'), background_callback=rasing_cb)
@@ -141,7 +142,7 @@ class RequestsTestCase(TestCase):
 
 # << test process pool executor >>
 # see discussion https://github.com/ross/requests-futures/issues/11
-def global_cb_modify_response(s, r):
+def global_cb_modify_response(s, r, e):
     """ add the parsed json data to the response """
     assert s, FuturesSession
     assert r, Response
@@ -149,14 +150,14 @@ def global_cb_modify_response(s, r):
     r.__attrs__.append('data')  # required for pickling new attribute
 
 
-def global_cb_return_result(s, r):
+def global_cb_return_result(s, r, e):
     """ simply return parsed json data """
     assert s, FuturesSession
     assert r, Response
     return r.json()
 
 
-def global_rasing_cb(s, r):
+def global_rasing_cb(s, r, e):
     raise Exception('boom')
 
 
