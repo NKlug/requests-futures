@@ -25,6 +25,7 @@ from pickle import dumps, PickleError
 
 from requests import Session
 from requests.adapters import DEFAULT_POOLSIZE, HTTPAdapter
+from requests.exceptions import RequestException
 
 
 def wrap(self, sup, background_callback, *args_, **kwargs_):
@@ -33,7 +34,7 @@ def wrap(self, sup, background_callback, *args_, **kwargs_):
     err = None
     try:
         resp = sup(*args_, **kwargs_)
-    except ConnectionError as e:
+    except RequestException as e:
         err = e
 
     return background_callback(self, resp, err) or resp
